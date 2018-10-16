@@ -1,0 +1,52 @@
+---
+title: "Data Tidying"
+author: "Ben"
+date: "October 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+Read in catch data from [Mike Byerly. Alaska commercial salmon catches by management region (1886- 1997). Gulf of Alaska Data Portal. df35b.304.2.](https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1)
+
+```{r}
+catch_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"),
+                    stringsAsFactors = FALSE)
+head(catch_df)
+```
+
+`select` (looks like code but doesn't run as code) the columns needed for analysis
+
+```{r}
+catch_clean <- catch_df %>%
+  select(-All, -notesRegCode)
+head(catch_clean)
+```
+
+Change from wide to long format using `gather`
+
+```{r}
+catch_long <- gather(catch_clean, key = "species", value = "catch", -Region, -Year)
+head(catch_long)
+```
+
+
+```{r}
+regional_catch <- gather(catch_long, key = "Year", value = "catch") %>% 
+  spread(catch_long, key = "Region", value = "catch")
+head(regional_catch)
+```
+
+note: rename function renatme (catch_thousands = catch)
+
+```{r}
+
+
+```
