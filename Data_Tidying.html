@@ -138,7 +138,8 @@ $(document).ready(function () {
 <pre><code>## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(tidyr)</code></pre>
+<pre class="r"><code>library(tidyr)
+library(DT)</code></pre>
 <p>Read in catch data from <a href="https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1">Mike Byerly. Alaska commercial salmon catches by management region (1886- 1997). Gulf of Alaska Data Portal. df35b.304.2.</a></p>
 <pre class="r"><code>catch_df &lt;- read.csv(url(&quot;https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1&quot;, method = &quot;libcurl&quot;),
                     stringsAsFactors = FALSE)
@@ -290,6 +291,17 @@ dates_df %&gt;%
 ## 3     5  26 1930
 ## 4     5  27 1930
 ## 5     5  28 1930</code></pre>
+<pre class="r"><code>dates_seperate &lt;-dates_df %&gt;%
+  separate(date, c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;), &quot;/&quot;) %&gt;% 
+  unite(col = date_iso, year, month, day, sep = &quot;-&quot;)
+dates_seperate</code></pre>
+<pre><code>##    date_iso
+## 1 1930-5-24
+## 2 1930-5-25
+## 3 1930-5-26
+## 4 1930-5-27
+## 5 1930-5-28</code></pre>
+<p>Still needs leading zeros</p>
 
 
 
