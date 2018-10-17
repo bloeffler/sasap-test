@@ -257,6 +257,39 @@ head(catch_chinook)</code></pre>
 ## 4    NSE 1939 Chinook 493000
 ## 5    SSE 1938 Chinook 485000
 ## 6    NSE 1924 Chinook 479000</code></pre>
+<p>Join with metadata table</p>
+<pre class="r"><code>region_defs &lt;- read.csv(url(&quot;https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1&quot;, method = &quot;libcurl&quot;), stringsAsFactors = FALSE)# %&gt;% 
+  #rename(Region = code)
+#left_join(catch_df, region_defs, by = &quot;Region&quot;)
+region_defs &lt;- region_defs %&gt;% 
+  select(code, mgmtArea)</code></pre>
+<pre class="r"><code>catch_joined &lt;- left_join(catch_clean_mutated, region_defs, by = c(&quot;Region&quot; = &quot;code&quot;))
+tail(catch_joined)</code></pre>
+<pre><code>##      Region Year species  catch               mgmtArea
+## 8535    NOP 1992    Chum 342000 NorthPeninsual Subarea
+## 8536    NOP 1993    Chum 135000 NorthPeninsual Subarea
+## 8537    NOP 1994    Chum  84000 NorthPeninsual Subarea
+## 8538    NOP 1995    Chum  99000 NorthPeninsual Subarea
+## 8539    NOP 1996    Chum  68000 NorthPeninsual Subarea
+## 8540    NOP 1997    Chum  97000 NorthPeninsual Subarea</code></pre>
+<pre class="r"><code>#Check merge for NA generation
+i &lt;- is.na(catch_joined)</code></pre>
+<p>New topic</p>
+<pre class="r"><code>dates_df &lt;- data.frame(date = c(&quot;5/24/1930&quot;,
+                                &quot;5/25/1930&quot;,
+                                &quot;5/26/1930&quot;,
+                                &quot;5/27/1930&quot;,
+                                &quot;5/28/1930&quot;),
+                       stringsAsFactors = FALSE)
+
+dates_df %&gt;% 
+  separate(date, c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;), &quot;/&quot;)</code></pre>
+<pre><code>##   month day year
+## 1     5  24 1930
+## 2     5  25 1930
+## 3     5  26 1930
+## 4     5  27 1930
+## 5     5  28 1930</code></pre>
 
 
 

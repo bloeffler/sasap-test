@@ -97,3 +97,50 @@ catch_chinook <- catch_clean_mutated %>%
 
 head(catch_chinook)
 ```
+
+
+Join with metadata table
+
+```{r}
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1", method = "libcurl"), stringsAsFactors = FALSE)# %>% 
+  #rename(Region = code)
+#left_join(catch_df, region_defs, by = "Region")
+region_defs <- region_defs %>% 
+  select(code, mgmtArea)
+```
+
+
+```{r}
+catch_joined <- left_join(catch_clean_mutated, region_defs, by = c("Region" = "code"))
+tail(catch_joined)
+
+#Check merge for NA generation
+i <- is.na(catch_joined)
+
+```
+New topic
+
+```{r}
+
+dates_df <- data.frame(date = c("5/24/1930",
+                                "5/25/1930",
+                                "5/26/1930",
+                                "5/27/1930",
+                                "5/28/1930"),
+                       stringsAsFactors = FALSE)
+
+dates_df %>% 
+  separate(date, c("month", "day", "year"), "/")
+
+```
+
+```{r}
+dates_seperate <-dates_df %>%
+  separate(date, c("month", "day", "year"), "/") %>% 
+  unite(col = date_iso, year, month, day, sep = "-")
+dates_seperate
+```
+
+Still needs leading zeros
+
+
