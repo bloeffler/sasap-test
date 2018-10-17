@@ -1,0 +1,237 @@
+---
+title: "GGPlot Lesson"
+author: "Ben"
+date: "October 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(tidyr)
+  library(dplyr)
+  library(DT)
+})
+
+# https://knb.ecoinformatics.org/#view/urn:uuid:e05865d7-678d-4513-9061-2ab7d979f8e7
+# Search 'permit value'
+permits <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Aa3c58bd6-481e-4c64-aa93-795df10a4664", method = "libcurl"), stringsAsFactors = FALSE)
+
+datatable(permits)
+
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev)) + 
+  geom_point()
+
+```
+
++ sign is like pipe %>% 
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) + 
+  geom_point()
+```
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Region, shape = Gear)) + 
+  geom_point()
+```
+
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = "blue")) +
+  geom_point()
+```
+
+
+```{r}
+ggplot(permits, aes(Value, StdDev)) +
+  geom_point(color = "blue")
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear, size = Range)) +
+  geom_point()
+```
+
+```{r}
+ggplot(permits, aes(Value)) + 
+  geom_histogram()
+```
+
+```{r}
+ggplot(permits, aes(Value)) + 
+  geom_histogram(binwidth = 5e3, fill = "blue")
+```
+
+```{r}
+ggplot(permits, aes(Gear, Value)) + 
+  geom_boxplot()
+```
+
+
+```{r}
+ggplot(permits, aes(Region, Value)) + 
+  geom_boxplot()
+```
+
+
+```{r}
+permits_ci <- permits %>%
+  filter(Region == "Cook Inlet")
+
+ggplot(permits_ci, aes(Gear, Value)) + 
+  geom_violin()
+```
+
+```{r}
+ggplot(permits_ci, aes(Gear, Value)) +
+    geom_violin() +
+    geom_point(shape = 1, position = "jitter")
+```
+```{r}
+ggplot(permits, aes(Gear, Value)) +
+    geom_boxplot() +
+    geom_point(shape = 1, position = "jitter")
+```
+
+
+```{r}
+ggplot(permits, aes(Value, StdDev)) + 
+  geom_point() +
+  geom_smooth()
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev)) + 
+  geom_point() +
+  geom_smooth(method = "lm", level = 0.999)
+```
+na.rm = T is setting to remove na from mean calculations
+
+```{r}
+permits_sum <- permits %>% 
+  group_by(Gear, Region) %>% 
+  summarize(mean_value = mean(Value, na.rm = T))
+```
+
+
+```{r}
+ggplot(permits_sum, aes(x = Gear, y = mean_value, fill = Region)) +
+  geom_bar(position = "stack", stat = "identity")
+```
+
+```{r}
+ggplot(permits_sum, aes(x = Region, y = mean_value, fill = Gear)) +
+  geom_bar(position = "stack", stat = "identity")
+```
+```{r}
+ggplot(permits_sum, aes(x = Region, y = mean_value, fill = Gear)) +
+  geom_bar(position = "dodge", stat = "identity")
+```
+
+```{r}
+ggplot(permits_sum, aes(x = Region, y = mean_value, fill = Gear)) +
+  geom_bar(position = "fill", stat = "identity")
+```
+
+```{r}
+permits_se_seine <- permits %>% 
+  filter(Gear == "Purse Seine", 
+         Region == "Southeast")
+
+permits_pws_seine <- permits %>% 
+  filter(Gear == "Purse Seine", 
+         Region == "Prince Wm Snd")
+
+ggplot(permits_se_seine, aes(Year, Value)) + 
+  geom_point() +
+  geom_line()
+```
+
+```{r}
+ggplot(permits_pws_seine, aes(Year, Value))+
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(limits = c(0, max(permits_se_seine$Value))) +
+  scale_x_continuous(limits = c(2000, max(permits_se_seine$Year)))
+```
+
+```{r}
+ggplot(permits_ci, aes(Year, Value)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~ Gear)
+```
+
+```{r}
+ggplot(permits_ci, aes(Year, Value)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~ Gear, ncol = 1)
+```
+
+```{r}
+ggplot(permits, aes(Year, Value, group = Region)) +
+  geom_line() +
+  facet_wrap(~ Gear, ncol = 7)
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) + 
+  geom_point() +
+  theme_classic()
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) + 
+  geom_point() +
+  theme_bw()
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) + 
+  geom_point() +
+  theme_classic() +
+  theme(legend.position = "bottom",
+        legend.background = element_rect(fill = "#EEEEEE", color = "black"),
+        legend.title = element_blank(),
+        axis.title = element_text(size = 16))
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) +
+  geom_point() +
+  theme_classic() +
+  theme(legend.position = c(1, 1),
+        legend.justification = c(1,1),
+        legend.direction = "horizontal",
+        legend.title = element_blank()) +
+  xlab("Permit Value (unadjusted USD)") +
+  ylab("Permit Std. Dev. (unadjusted USD)") +
+  ggtitle("Permit Standard Deviation against Permit Value by Gear Type",
+          "or: I wish I owned a seine permit")
+```
+
+Build and save theme:
+
+```{r}
+my_theme <- theme_bw() +
+  theme(legend.title = element_blank(),
+        panel.grid.major = element_line(size = 1, linetype = 4),
+        panel.grid.minor = element_blank())
+  
+ggplot(permits, aes(Value, StdDev, color = Gear)) +
+  geom_point() +
+  my_theme
+```
+
+
+
+

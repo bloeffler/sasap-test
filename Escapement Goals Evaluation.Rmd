@@ -1,0 +1,141 @@
+---
+title: "Hands-On Data Excercise"
+author: "Ben"
+date: "October 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(DT)
+```
+
+# Prepare Daily Escapement Data
+
+Escapement data sourced from [Goals data sourced from [Andrew Munro and Eric Volk. 2017. Summary of Pacific Salmon Escapement Goals in Alaska with a Review of Escapements from 2007 to 2015. Knowledge Network for Biocomplexity. doi:10.5063/F1TQ5ZRG](https://knb.ecoinformatics.org/view/doi:10.5063/F1TX3CKH)
+
+```{r}
+catch_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e", method = "libcurl"), stringsAsFactors = FALSE)
+
+head(catch_df)
+```
+
+
+```{r}
+catch_BB_df <- catch_df %>%
+  filter(SASAP.Region == "Bristol Bay") 
+
+head(catch_BB_df)
+```
+
+```{r}
+catch_BBSock_df <- catch_BB_df %>%
+  filter(Species == "Sockeye") %>% 
+  select(SASAP.Region, Location, sampleDate, Species, DailyCount)
+
+head(catch_BBSock_df)
+```
+
+```{r}
+yearlycatch_BBSock_df <- catch_BBSock_df %>%
+  separate(sampleDate, c("year", "month", "day"), "-")
+
+head(yearlycatch_BBSock_df)
+```
+```{r}
+yearlycatchtotal_BBSock_df <- yearlycatch_BBSock_df %>% 
+  group_by(Location, year) %>% 
+  summarize(total_catch = sum(DailyCount))
+
+head(yearlycatchtotal_BBSock_df)
+```
+
+
+
+# Prepare Escapement Goals Data
+
+Goals data sourced from [Andrew Munro and Eric Volk. 2017. Summary of Pacific Salmon Escapement Goals in Alaska with a Review of Escapements from 2007 to 2015. Knowledge Network for Biocomplexity. doi:10.5063/F1TQ5ZRG](https://knb.ecoinformatics.org/view/doi:10.5063/F1TQ5ZRG)
+
+```{r}
+
+goals_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/knb.92014.1", method = "libcurl"), stringsAsFactors = FALSE)
+
+head(goals_df)
+```
+
+
+
+
+```{r}
+goals_BBSock_df <- goals_df %>%
+  filter(Species == "Sockeye", Region == "Bristol Bay") %>% 
+  select(Region, System, Species, Lower, Upper, Type, Initial.Year) %>% 
+  arrange(System)
+
+head(goals_BBSock_df)
+```
+```{r}
+bb_sockeye_goals <- goals_df %>% 
+  filter(Region == "Bristol Bay", Species == "Sockeye") %>% 
+  mutate(Lower = as.integer(Lower), Initial.Year = as.integer(Initial.Year)) %>% 
+  select(System, Lower, Upper, Initial.Year) %>% 
+  drop_na()
+
+datatable(bb_sockeye_goals)
+```
+
+
+Left Join with River as key:
+
+```{r}
+
+#joined_df <- left_join(yearlycatchtotal_BBSock_df, goals_BBSock_df, by = c("Location" = "System"))
+joined_df <- left_join(yearlycatchtotal_BBSock_df, bb_sockeye_goals, by = c("Location" = "System"))
+
+head(joined_df)
+
+```
+
+
+
+# Evaluate Escapement Goals
+
+```{r ChunkName}
+joined_df <- joined_df %>%
+  mutate(year = as.numeric(year))  
+
+head(joined_df)
+```
+
+```{r}
+bb_escapement_with_goals <- joined_df %>% 
+  mutate(is_goal_within = ifelse(total_catch < Upper & total_catch > Lower, TRUE, FALSE),
+         drop_by_year = ifelse(year >= Initial.Year, FALSE, TRUE))
+         
+datatable(bb_escapement_with_goals)
+```
+
+```{r ChunkName}
+joined_df <- joined_df %>%
+  mutate(Initial.Year = as.numeric(Initial.Year))%>%
+  mutate(year = as.numeric(year))  
+
+head(joined_df)
+```
+ 
+ 
+```{r GoalEval}
+
+
+```
+ 
+ 
+ 
+
+
+
